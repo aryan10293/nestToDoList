@@ -1,29 +1,25 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, UseGuards, Request} from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { AuthUser } from './interface/authUser.interface';
 import { LoginUserDto } from './dto/login.user.dto';
+import { UsersService } from 'src/users/users.service';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import * as validator from 'validator'
+import * as bcrypt from 'bcrypt';
+import { AuthGuard } from '@nestjs/passport';
 interface Message {
     msg: string;
 }
 @Injectable()
 export class AuthService {
-  constructor(@InjectModel('User') private readonly AuthUserModel: Model<AuthUser>) {}
+  constructor(@InjectModel('User') private readonly AuthUserModel: Model<AuthUser>, private usersService: UsersService) {}
 
-  async create(createUserDto: CreateUserDto) {
+  @UseGuards(AuthGuard('local'))
+  async create(createUserDto: CreateUserDto, @Request() req:any) {
+    
     const users = await this.AuthUserModel.find()
     const validationErrors: Message[] = [];
-    const validEmail: Message = {
-        msg: "Please enter a valid email address." 
-    }
-    const passwordLength: Message = {
-        msg: "Password must be at least 8 characters long",
-    }
-    const correctPassword: Message = {
-        msg: "Passwords do not match" 
-    }
 
     if (!validator.isEmail(createUserDto.email)){
       throw new BadRequestException({
@@ -65,8 +61,23 @@ export class AuthService {
       }
     }
     const newUser = await this.AuthUserModel.create(createUserDto)
-    return newUser.save()
-    
+    await newUser.save()
+    let user = await this.validateUser(createUserDto.name, createUserDto.password)
+
+    console.log(user, 'lol')
+    return user
+  }
+
+  async validateUser(name: string, pass: string): Promise<any> {
+    let user = await this.usersService.findOne(name);
+    user = user[0]
+    let isMatch = await bcrypt.compare(pass, user.password)
+    if (user && isMatch) {
+      const userWithoutPassword = user.toObject();
+      delete userWithoutPassword.password;
+      return userWithoutPassword;
+    }
+    return null;
   }
 
   findAll() {
