@@ -10,11 +10,13 @@ import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import mongoose from 'mongoose';
 import { JwtStrategy } from './auth/jwt.strategy';
+import AuthUserSchema from './auth/schemas/auth.schema';
 
 @Module({
   imports: [
     ConfigModule.forRoot({envFilePath: '.env',isGlobal: true}), 
     TaskModule,
+    MongooseModule.forFeature([{ name: 'User', schema: AuthUserSchema }]),
     MongooseModule.forRoot(process.env.DB_STRING),
     AuthModule,
     UsersModule

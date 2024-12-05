@@ -17,8 +17,11 @@ export class UsersService {
     return users.filter((user) => user.email === email);
   }
 
-  findAll() {
-    return `This action returns all users`;
+ async findProfile(id:string) {
+    const user = await this.AuthUserModel.find({_id:id})
+    let lol = user[0].toObject()
+    delete lol.password
+    return lol;
   }
 
 
