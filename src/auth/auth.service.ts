@@ -4,18 +4,21 @@ import { AuthUser } from './interface/authUser.interface';
 import { LoginUserDto } from './dto/login.user.dto';
 import { UsersService } from 'src/users/users.service';
 import { InjectModel } from '@nestjs/mongoose';
+import { JwtService } from '@nestjs/jwt';
 import { Model } from 'mongoose';
 import * as validator from 'validator'
 import * as bcrypt from 'bcrypt';
-import { AuthGuard } from '@nestjs/passport';
 interface Message {
     msg: string;
 }
 @Injectable()
 export class AuthService {
-  constructor(@InjectModel('User') private readonly AuthUserModel: Model<AuthUser>, private usersService: UsersService) {}
+    constructor(@InjectModel('User') 
+    private readonly AuthUserModel: Model<AuthUser>, 
+    private usersService: UsersService,
+    private jwtService: JwtService
+  ) {}
 
-  @UseGuards(AuthGuard('local'))
   async create(createUserDto: CreateUserDto, @Request() req:any) {
     
     const users = await this.AuthUserModel.find()
@@ -62,14 +65,13 @@ export class AuthService {
     }
     const newUser = await this.AuthUserModel.create(createUserDto)
     await newUser.save()
-    let user = await this.validateUser(createUserDto.name, createUserDto.password)
+    let user = await this.validateUser(createUserDto.email, createUserDto.password)
 
-    console.log(user, 'lol')
     return user
   }
 
-  async validateUser(name: string, pass: string): Promise<any> {
-    let user = await this.usersService.findOne(name);
+  async validateUser(email: string, pass: string): Promise<any> {
+    let user = await this.usersService.findOne(email);
     user = user[0]
     let isMatch = await bcrypt.compare(pass, user.password)
     if (user && isMatch) {
@@ -78,6 +80,13 @@ export class AuthService {
       return userWithoutPassword;
     }
     return null;
+  }
+
+  async login(user: any) {
+    const payload = { username: user.name, sub: user._id };
+    return {
+      access_token: this.jwtService.sign(payload),
+    };
   }
 
   findAll() {

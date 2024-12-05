@@ -8,8 +8,8 @@ import { ConfigModule } from '@nestjs/config'
 import { TaskModule } from './task/task.module';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
-
 import mongoose from 'mongoose';
+import { JwtStrategy } from './auth/jwt.strategy';
 
 @Module({
   imports: [
@@ -20,7 +20,7 @@ import mongoose from 'mongoose';
     UsersModule
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, JwtStrategy],
 })
 export class AppModule {
   constructor() {

@@ -12,9 +12,9 @@ export class UsersService {
     return 'This action adds a new user';
   }
 
-  async findOne(name: string): Promise<User | undefined> {
+  async findOne(email: string): Promise<User | undefined> {
    const users = await this.AuthUserModel.find()
-    return users.filter((user) => user.name === name);
+    return users.filter((user) => user.email === email);
   }
 
   findAll() {
