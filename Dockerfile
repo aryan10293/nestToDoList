@@ -2,7 +2,7 @@
 # The Build Stage
 ###################
 
-FROM node:20-alpine AS build
+FROM node:19-alpine 
 # Docker working dir for Nest.js
 WORKDIR /app
 # Copy both .json files
@@ -15,20 +15,22 @@ COPY . .
 # Create the build
 RUN npm run build
 
+CMD ["npm","run", "start:dev"]
+
 ###################
 # The Production Stage
 ###################
 
-FROM node:20-alpine AS prod
-# Setting up the production space
-WORKDIR /app
-COPY package*.json .
-# Only run dependencies need for production
-RUN npm install --only=production
-# Copy dist from the build stage
-COPY --from=build /app/dist  ./dist
-# State the port you need Nest.js to use
-ENV PORT=3000
-EXPOSE ${PORT}
-# Command to run Nest.js on Docker
-CMD ["npm","run", "start:prod"]
+# FROM node:20-alpine AS prod
+# # Setting up the production space
+# WORKDIR /app
+# COPY package*.json .
+# # Only run dependencies need for production
+# RUN npm install --only=production
+# # Copy dist from the build stage
+# COPY --from=build /app/dist  ./dist
+# # State the port you need Nest.js to use
+# ENV PORT=3000
+# EXPOSE ${PORT}
+# # Command to run Nest.js on Docker
+# CMD ["npm","run", "start:prod"]

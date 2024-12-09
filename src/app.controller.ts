@@ -10,10 +10,8 @@ export class AppController {
       private readonly appService: AppService,
     ) {}
 
-  @UseGuards(JwtAuthGuard)
-  @Get('profile')
+  @Get()
   getProfile(@Request() req:any) {
-    // console.log(this.AuthUserModel.find({_id:req.user.userId}))
-    // return {userId: req.user.userId};
+    return 'hey does this work'
   }
 }
